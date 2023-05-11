@@ -1,0 +1,8 @@
+Flask
+requests
+json
+time
+datetime
+paho-mqtt
+sqlite3 
+random
