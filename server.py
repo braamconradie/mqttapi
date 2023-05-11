@@ -12,6 +12,8 @@ import time
 from flask import Flask, jsonify
 #from flask_cors import CORS
 from flask_cors import CORS, cross_origin
+# from multiprocessing import Process, Value
+import threading
 
 #hi g
 #run below only once to createn table..
@@ -25,6 +27,10 @@ from flask_cors import CORS, cross_origin
 from numpy import arange, sin, pi
 import numpy as np
 counter2=0
+voltage =0
+power=0
+timestamp = 0
+recordcount =0
 
 app = Flask(__name__)
 CORS(app)
@@ -33,14 +39,15 @@ CORS(app)
 @app.route("/")
 # @cross_origin()
 def hello():
-  return "lala"
+  return jsonify("lala")
 
 @app.route("/hello")
 def hello2():
-  global counter2
+  global counter2, recordcount, power, voltagei  
   counter2 +=1
-  return jsonify([counter2,5,6,7, "amazing"]) 
-  # return "This is a test   "+str(counter2)f f
+  return jsonify([power,voltage, recordcount]) 
+  # return jsonify("lala")
+  # return "This is a test   "+str(counter2)f f g e
 
 open('example.txt', 'w').close()
 consumecount = 0 
@@ -63,6 +70,7 @@ def on_message(client, userdata, msg):
     global consumecount
     global recentconsume
     global consumecountlist
+    global voltage, power, timestamp, recordcount
     topic=msg.topic
     m_decode=str(msg.payload.decode("utf-8","ignore"))
     m_in = json.loads(m_decode) #decode json data
@@ -94,7 +102,7 @@ def on_message(client, userdata, msg):
     
     body=[timestamp, voltage, power] #the values should be a list
 
-    ## TO DO CALL THIS EVERY 15 seconds
+    ## TO DO CALL THIS EVERY 15 seconds r
     # thingspeakcall = "https://api.thingspeak.com/update?api_key=ZIPWDOGJTN68PNDL&field1="+str(voltage)
     # thingspeakcall2 = "https://api.thingspeak.com/update?api_key=ZIPWDOGJTN68PNDL&field1="+str(voltage)+"&field2="+str(power)
     # print (thingspeakcall2)
@@ -125,25 +133,43 @@ client.on_message = on_message
 client.connect(broker, 1883, 60)
 client.loop_start()
 
-if __name__ == "__main__":
-  app.run()
+# if __name__ == "__main__":
+#   app.run()
 
-while True:
-    print ("loop running yay")
-    client.publish("cmnd/mospow2/STATUS", 10)
-    client.publish("werkreplit", "yep")
-    # this little bugger below stuffed up my json validation!!! test gh
-    
-    #client.publish("werkdit", "yep")
-    
-    time.sleep(1)
-  
+# def record_loop(loop_on):
+
+def mqttloop():
+    threading.Timer(2.0, mqttloop).start()
+    client.publish("cmnd/mospow2/STATUS", 0.2)
+    print("mqttloop")
+
+def print_hello2():
+    threading.Timer(3.0, print_hello2).start()
+    print("hello2")
+
+mqttloop()
+app.run()
+
+
+
+
+# while True:
+#     print ("loop running yay")
+#     client.publish("cmnd/mospow2/STATUS", 10)
+#     client.publish("werkreplit", "yep")
+#     # this little bugger below stuffed up my json validation!!! test ghr
+
+#     #client.publish("werkdit", "yep")
+
+#     time.sleep(1)
+#     app.run()
+
     #print number of records in data base
     #root.update()
 
 
 # root = Tk()
-# # Open window having dimension 100x100
+# # Open window having dimension 100x100 r rrrr
 # root.geometry('100x100')
 
 # btn = Button(root, text = 'Click me !', bd = '5',
